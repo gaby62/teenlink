@@ -1,4 +1,4 @@
-const CACHE_NAME = 'teenlink-v1';
+const CACHE_NAME = 'teenlink-v2';
 const OFFLINE_URLS = [
   '/',
   '/index.html',
