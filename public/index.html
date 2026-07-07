@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TeenLink</title>
+  <meta name="theme-color" content="#5b8a72">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TeenLink">
+  <meta name="description" content="TeenLink - Réseau social pour les 13-18 ans">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon-192.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon-192.svg">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #5b8a72;
+      --primary-light: #7aab94;
+      --primary-dark: #3d6b54;
+      --secondary: #c4856a;
+      --accent: #d4a574;
+      --bg: #faf8f5;
+      --card: #ffffff;
+      --text: #2d3436;
+      --text-secondary: #636e72;
+      --border: #e8e4df;
+      --glow: rgba(91, 138, 114, 0.3);
+    }
+    body { margin: 0; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; background: var(--bg); color: var(--text); transition: background 0.4s ease, color 0.4s ease; }
+    body.dark { background: #1a2418; color: #e0ddd8; }
+    .fade-in { animation: fadeIn 0.35s ease-out; }
+    .page-slide { animation: pageSlide 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pageSlide { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes popIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    @keyframes borderGlow { 0%,100% { border-color: var(--primary); } 50% { border-color: var(--accent); } }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    .pop-in { animation: popIn 0.25s ease-out; }
+    .bounce { animation: bounce 0.4s ease; }
+    .chat-scroll { scroll-behavior: smooth; }
+    .chat-scroll::-webkit-scrollbar { width: 5px; }
+    .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+    .chat-scroll::-webkit-scrollbar-thumb { background: var(--primary-light); border-radius: 10px; }
+
+    /* === DARK MODE === */
+    body.dark { background: #1a2418; color: #e0ddd8; }
+    .dark .bg-white { background: #243029 !important; }
+    .dark .bg-gray-50, .dark .bg-gray-100 { background: #1e2b22 !important; }
+    .dark .bg-gray-200 { background: #2d3e33 !important; }
+    .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600 { color: #e0ddd8 !important; }
+    .dark .text-gray-500, .dark .text-gray-400 { color: #9aa89e !important; }
+    .dark .border { border-color: #3a4a3f !important; }
+    .dark .border-gray-200, .dark .border-gray-300 { border-color: #3a4a3f !important; }
+    .dark nav { background: #1e2b22 !important; }
+    .dark input, .dark select, .dark textarea { background: #1e2b22 !important; color: #e0ddd8 !important; border-color: #3a4a3f !important; }
+
+    /* === NAVBAR === */
+    nav.naturel-nav {
+      background: linear-gradient(135deg, #5b8a72 0%, #7aab94 50%, #c4856a 100%);
+      box-shadow: 0 4px 20px rgba(91, 138, 114, 0.25);
+    }
+    .dark nav.naturel-nav {
+      background: linear-gradient(135deg, #1e2b22 0%, #2d3e33 50%, #3a4a3f 100%);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    nav .logo-text {
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: white;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      letter-spacing: -0.5px;
+    }
+
+    /* === DRAWER GLASSMORPHISM === */
+    .drawer-overlay { position: fixed; inset: 0; background: rgba(26, 36, 24, 0.5); backdrop-filter: blur(4px); z-index: 90; animation: fadeIn 0.2s; }
+    .drawer { position: fixed; left: 0; top: 0; bottom: 0; width: 290px; background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 100; transform: translateX(-100%); transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); box-shadow: 4px 0 30px rgba(0,0,0,0.12); overflow-y: auto; border-right: 1px solid rgba(91, 138, 114, 0.15); }
+    .drawer.open { transform: translateX(0); }
+    .dark .drawer { background: rgba(30, 43, 34, 0.92); border-right-color: rgba(91, 138, 114, 0.2); }
+    .drawer-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; font-size: 0.9rem; font-weight: 500; border-radius: 0 16px 16px 0; margin-right: 8px; cursor: pointer; transition: all 0.2s ease; }
+    .drawer-item:hover { background: rgba(91, 138, 114, 0.08); }
+    .drawer-item.active { background: linear-gradient(90deg, rgba(91,138,114,0.15), rgba(196,133,106,0.08)); color: var(--primary-dark); font-weight: 600; border-left: 3px solid var(--primary); }
+    .dark .drawer-item:hover { background: rgba(91, 138, 114, 0.12); }
+    .dark .drawer-item.active { background: linear-gradient(90deg, rgba(91,138,114,0.2), rgba(196,133,106,0.1)); color: var(--primary-light); }
+
+    /* === CARDS NATURE === */
+    .card-nature {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(91, 138, 114, 0.08);
+      border: 1px solid rgba(91, 138, 114, 0.1);
+      transition: all 0.3s ease;
+    }
+    .card-nature:hover {
+      box-shadow: 0 8px 30px rgba(91, 138, 114, 0.15);
+      border-color: rgba(91, 138, 114, 0.2);
+      transform: translateY(-2px);
+    }
+    .dark .card-nature { background: #243029; border-color: rgba(91, 138, 114, 0.15); }
+    .dark .card-nature:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+
+    /* === BOUTONS NATURE === */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(91, 138, 114, 0.3);
+      transition: all 0.25s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(91, 138, 114, 0.4);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--secondary), #d4956a);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(196, 133, 106, 0.3);
+      transition: all 0.25s ease;
+    }
+    .btn-secondary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(196, 133, 106, 0.4); }
+
+    /* === AVATAR GLOW === */
+    .avatar-glow {
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(91, 138, 114, 0.2), 0 4px 12px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    .avatar-glow:hover { box-shadow: 0 0 0 3px rgba(91, 138, 114, 0.4), 0 4px 20px rgba(91, 138, 114, 0.3); }
+
+    /* === ONLINE DOT === */
+    .online-dot { width: 11px; height: 11px; background: #4caf50; border-radius: 50%; border: 2px solid white; position: absolute; bottom: 0; right: 0; box-shadow: 0 0 6px rgba(76, 175, 80, 0.5); }
+    .dark .online-dot { border-color: #243029; }
+
+    /* === BADGES === */
+    .badge-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 9999px;
+      font-size: 0.7rem; font-weight: 600;
+      background: linear-gradient(135deg, rgba(91,138,114,0.1), rgba(196,133,106,0.1));
+      border: 1px solid rgba(91,138,114,0.15);
+    }
+
+    /* === INPUTS === */
+    input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="tel"], select, textarea {
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      transition: all 0.25s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(91, 138, 114, 0.15);
+      outline: none;
+    }
+
+    /* === STATUS DOTS === */
+    .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; display: inline-block; flex-shrink: 0; }
+    .status-available { background: #4caf50; box-shadow: 0 0 6px rgba(76, 175, 80, 0.4); }
+    .status-busy { background: #e74c3c; box-shadow: 0 0 6px rgba(231, 76, 60, 0.4); }
+    .status-studying { background: #f39c12; box-shadow: 0 0 6px rgba(243, 156, 18, 0.4); }
+    .status-away { background: #95a5a6; }
+    .status-invisible { background: #7f8c8d; }
+
+    /* === VOICE RECORDING === */
+    .voice-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: all 0.2s; }
+    .voice-recording { background: #e74c3c; animation: pulse 1s infinite; box-shadow: 0 0 20px rgba(231, 76, 60, 0.4); }
+
+    /* === COMPAT RING === */
+    .compat-ring { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; background: linear-gradient(135deg, rgba(91,138,114,0.1), rgba(212,165,116,0.1)); }
+
+    /* === EMOJI PICKER === */
+    .emoji-picker { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; max-height: 200px; overflow-y: auto; }
+    .emoji-btn { font-size: 1.4rem; padding: 4px; cursor: pointer; border-radius: 8px; text-align: center; border: none; background: none; transition: all 0.15s; }
+    .emoji-btn:hover { background: rgba(91, 138, 114, 0.1); transform: scale(1.2); }
+
+    /* === HEADER PROFILE === */
+    .profile-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 40%, var(--secondary) 100%);
+      border-radius: 16px 16px 0 0;
+    }
+    .dark .profile-header {
+      background: linear-gradient(135deg, #2d3e33 0%, #3a4a3f 50%, #4a3a35 100%);
+    }
+
+    /* === MODAL GLASS === */
+    .modal-glass {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(91, 138, 114, 0.15);
+    }
+    .dark .modal-glass { background: rgba(30, 43, 34, 0.95); }
+
+    /* === XP BAR === */
+    .xp-bar { height: 6px; border-radius: 10px; background: rgba(91, 138, 114, 0.15); overflow: hidden; }
+    .xp-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.5s ease; }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+      body { font-size: 14px; }
+      .max-w-xl, .max-w-3xl, .max-w-4xl { max-width: 100% !important; padding-left: 8px !important; padding-right: 8px !important; }
+      .flex.flex-col.h-screen { height: auto !important; min-height: 100vh; }
+      .page-slide { padding-top: 4px !important; }
+      .drawer { width: 240px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, createContext, useContext, useCallback } = React;
+
+    // === THEME CONTEXT (#3) ===
+    const ThemeContext = createContext(null);
+    function ThemeProvider({ children }) {
+      const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
+      useEffect(() => { localStorage.setItem('theme', dark ? 'dark' : 'light'); document.body.className = dark ? 'dark' : ''; }, [dark]);
+      return <ThemeContext.Provider value={{ dark, toggle: () => setDark(d => !d) }}>{children}</ThemeContext.Provider>;
+    }
+    const useTheme = () => useContext(ThemeContext);
+
+    // === API ===
+    const API = '/api';
+    const getToken = () => localStorage.getItem('token');
+    const headers = (json = true) => {
+      const h = { Authorization: `Bearer ${getToken()}` };
+      if (json) h['Content-Type'] = 'application/json';
+      return h;
+    };
+    const api = {
+      get: async (path) => { const r = await fetch(`${API}${path}`, { headers: headers(false) }); if (!r.ok) throw new Error((await r.json()).message); return r.json(); },
+      post: async (path, body) => { const r = await fetch(`${API}${path}`, { method: 'POST', headers: headers(), body: JSON.stringify(body) }); if (!r.ok) throw new Error((await r.json()).message); return r.json(); },
+      put: async (path, body) => { const r = await fetch(`${API}${path}`, { method: 'PUT', headers: headers(), body: body ? JSON.stringify(body) : undefined }); if (!r.ok) throw new Error((await r.json()).message); return r.json(); },
+      del: async (path) => { const r = await fetch(`${API}${path}`, { method: 'DELETE', headers: headers(false) }); if (!r.ok) throw new Error((await r.json()).message); return r.json(); },
+    };
+
+    // === CONTEXT ===
+    const AuthContext = createContext(null);
+    function AuthProvider({ children }) {
+      const [user, setUser] = useState(null);
+      const [loading, setLoading] = useState(true);
+      useEffect(() => {
+        if (getToken()) api.get('/users/me').then(setUser).catch(() => localStorage.removeItem('token')).finally(() => setLoading(false));
+        else setLoading(false);
+      }, []);
+      useEffect(() => {
+        if (!user) return;
+        const heartbeat = () => api.post('/heartbeat').catch(()=>{});
+        heartbeat();
+        const i = setInterval(heartbeat, 30000);
+        return () => clearInterval(i);
+      }, [user]);
+      const login = async (email, password) => { const d = await api.post('/auth/login', { email, password }); localStorage.setItem('token', d.token); setUser(d.user); return d; };
+      const register = async (data) => { const d = await api.post('/auth/register', data); localStorage.setItem('token', d.token); setUser(d.user); return d; };
+      const logout = () => { localStorage.removeItem('token'); setUser(null); };
+      const updateUser = async (updates) => { const u = await api.put('/users/me', updates); setUser(u); return u; };
+      return <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>{children}</AuthContext.Provider>;
+    }
+    const useAuth = () => useContext(AuthContext);
+
+    // === ROUTER (simple hash) ===
+    function useRoute() {
+      const [path, setPath] = useState(window.location.hash.slice(1) || '/messages');
+      useEffect(() => { const h = () => setPath(window.location.hash.slice(1) || '/messages'); window.addEventListener('hashchange', h); return () => window.removeEventListener('hashchange', h); }, []);
+      const navigate = (p) => { window.location.hash = p; };
+      return { path, navigate };
+    }
+
+    // === CONSTANTS ===
+    const HAIR = ['noir','brun','roux','blond','gris','blanc','autre'];
+    const SKIN = ['claire','mate','foncée','noire','autre'];
+    const EYES = ['bruns','bleus','verts','noisette','gris','autre'];
+    const INTERESTS = ['Musique','Sport','Jeux vidéo','Lecture','Cinéma','Art','Cuisine','Voyage','Nature','Mode','Photo','Danse','Théâtre','Sciences','Informatique','Animaux'];
+    const EMOJIS = ['😀','😂','😍','🥰','😎','🤔','😢','😡','👍','👋','🔥','❤️','💪','🎉','🎵','⚽','🎮','📚','🍕','🌈','⭐','💫','🌸','🐱','🐶','✈️','🎨','💻','🏀','🎯','💀','🤝','📸','🎬','🌍'];
+
+    // === UTILS ===
+    function getAvatar(user, size = 40) {
+      if (user?.photos?.[0]) return React.createElement('img', { src: user.photos[0], className: `rounded-full object-cover`, style: { width: size, height: size } });
+      const name = user?.email?.split('@')[0] || '?';
+      const colors = ['#5b8a72','#c4856a','#d4a574','#4caf50','#3d6b54','#7aab94','#e74c3c','#14b8a6'];
+      const colorIdx = name.charCodeAt(0) % colors.length;
+      return React.createElement('div', {
+        className: 'rounded-full flex items-center justify-center text-white font-bold',
+        style: { width: size, height: size, background: colors[colorIdx], fontSize: size * 0.4 }
+      }, name.charAt(0).toUpperCase());
+    }
+
+    function isOnline(lastSeen) {
+      if (!lastSeen) return false;
+      return (Date.now() - new Date(lastSeen).getTime()) < 120000;
+    }
+
+    function playNotifSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 800; osc.type = 'sine';
+        gain.gain.value = 0.1;
+        osc.start(); osc.stop(ctx.currentTime + 0.15);
+        setTimeout(() => { const o2 = ctx.createOscillator(); const g2 = ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination); o2.frequency.value = 1000; o2.type = 'sine'; g2.gain.value = 0.1; o2.start(); o2.stop(ctx.currentTime + 0.15); }, 100);
+      } catch(e) {}
+    }
+
+    function EmojiPicker({ onSelect, onClose }) {
+      return React.createElement('div', { className: 'absolute bottom-full mb-2 right-0 bg-white shadow-xl rounded-xl p-3 pop-in z-50', style: { width: 280 } },
+        React.createElement('div', { className: 'emoji-picker' },
+          EMOJIS.map(e => React.createElement('button', { key: e, className: 'emoji-btn', onClick: () => { onSelect(e); onClose(); } }, e))
+        )
+      );
+    }
+
+    function Badges({ userId }) {
+      const [badges, setBadges] = useState([]);
+      const [rep, setRep] = useState(null);
+      useEffect(() => { api.get('/badges?userId=' + userId).then(setBadges).catch(()=>{}); api.get('/reputation?userId=' + userId).then(setRep).catch(()=>{}); }, [userId]);
+      if (!badges.length && !rep) return null;
+      const badgeColors = { popular: 'bg-yellow-100 text-yellow-700', liked: 'bg-pink-100 text-pink-700', social: 'bg-blue-100 text-blue-700', topfriend: 'bg-purple-100 text-purple-700', active: 'bg-orange-100 text-orange-700', chatter: 'bg-green-100 text-green-700', new: 'bg-gray-100 text-gray-600', verified: 'bg-[var(--primary)]/10 text-[var(--primary-dark)]' };
+      return React.createElement('div', { className: 'mb-3' },
+        rep && React.createElement('p', { className: 'text-xs text-gray-500 mb-1' }, `⭐ Réputation: ${rep.score}`),
+        React.createElement('div', { className: 'flex flex-wrap gap-1' },
+          badges.map(b => React.createElement('span', { key: b.id, className: `badge-chip ${badgeColors[b.id] || 'bg-gray-100 text-gray-600'}`, title: b.desc }, `${b.icon} ${b.name}`))
+        )
+      );
+    }
+
+    // === STATUS HELPER ===
+    const STATUS_LABELS = { available: '🟢 Disponible', busy: '🔴 Occupé(e)', studying: '🟡 En cours', away: '⚫ Absent(e)', invisible: '👻 Invisible' };
+    const STATUS_COLORS = { available: '#22c55e', busy: '#ef4444', studying: '#f59e0b', away: '#9ca3af', invisible: '#6b7280' };
+    const REACTION_EMOJIS = ['👍','❤️','😂','😮','😢','🔥'];
+
+    // === COMPONENTS ===
+    function Navbar({ page, navigate }) {
+      const { user, logout, updateUser } = useAuth();
+      const { dark, toggle } = useTheme();
+      const [unread, setUnread] = useState(0);
+      const [pending, setPending] = useState(0);
+      const [xp, setXp] = useState({ xp: 0, level: 1, nextLevel: 50 });
+      const [drawerOpen, setDrawerOpen] = useState(false);
+      const [statusMenu, setStatusMenu] = useState(false);
+      useEffect(() => {
+        if (!user) return;
+        const f = () => { api.get('/notifications/unread-count').then(d => setUnread(d.count)).catch(()=>{}); api.get('/friends/pending').then(d => setPending(d.length)).catch(()=>{}); api.get('/users/xp').then(setXp).catch(()=>{}); };
+        f(); const i = setInterval(f, 10000); return () => clearInterval(i);
+      }, [user]);
+      if (!user) return null;
+      const tabs = [
+        { id: 'messages', label: 'Messages', icon: '💬', badge: unread },
+        { id: 'stories', label: 'Stories', icon: '📱', badge: 0 },
+        { id: 'recherche', label: 'Recherche', icon: '🔍', badge: 0 },
+        { id: 'explorer', label: 'Explorer', icon: '🧭', badge: 0 },
+        { id: 'amis', label: 'Amis', icon: '👥', badge: pending },
+        { id: 'likes', label: 'Likes reçus', icon: '❤️', badge: 0 },
+        { id: 'sondages', label: 'Sondages', icon: '📊', badge: 0 },
+        { id: 'bloques', label: 'Bloqués', icon: '🚫', badge: 0 },
+        { id: 'stats', label: 'Stats', icon: '📈', badge: 0 },
+        { id: 'compte', label: 'Mon Compte', icon: '⚙️', badge: 0 },
+      ];
+      const changeStatus = async (s) => { try { await updateUser({ status: s }); setStatusMenu(false); } catch(e) {} };
+      const xpPct = xp.nextLevel > 0 ? Math.min(100, Math.round((xp.xp / xp.nextLevel) * 100)) : 0;
+      return (
+        <>
+          <nav className="naturel-nav sticky top-0 z-50">
+            <div className="max-w-4xl mx-auto px-4 flex items-center h-14">
+              <button onClick={() => setDrawerOpen(true)} className="text-2xl mr-3 text-white/80 hover:text-white transition-colors">☰</button>
+              <span className="logo-text cursor-pointer flex-1" onClick={() => navigate('/messages')}>TeenLink</span>
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs">
+                  <span className="font-bold text-white">Lv.{xp.level}</span>
+                  <div className="w-16 h-1.5 bg-white/25 rounded-full overflow-hidden"><div className="h-full bg-white rounded-full transition-all" style={{width: xpPct+'%'}}/></div>
+                </div>
+                {unread > 0 && <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 shadow-lg">{unread}</span>}
+                <div className="relative">
+                  <button onClick={() => setStatusMenu(!statusMenu)} className="flex items-center gap-1 text-xs text-white/80 hover:text-white px-2 py-1 rounded-lg hover:bg-white/15 transition-all">
+                    <span className="status-dot" style={{background: STATUS_COLORS[user.status || 'available']}}/>
+                    {(user.status || 'available') !== 'invisible' && <span className="hidden sm:inline">{STATUS_LABELS[user.status || 'available']?.split(' ').slice(1)}</span>}
+                  </button>
+                  {statusMenu && <div className="absolute right-0 top-full mt-1 modal-glass shadow-xl rounded-xl py-1 z-50 w-48 text-sm">
+                    {Object.entries(STATUS_LABELS).map(([k, v]) => <button key={k} onClick={() => changeStatus(k)} className={`w-full text-left px-4 py-2 hover:bg-[var(--primary)]/10 ${(user.status||'available')===k?'bg-[var(--primary)]/10 font-semibold':''}`}>{v}</button>)}
+                  </div>}
+                </div>
+                <button onClick={toggle} className="px-2 py-1 rounded-lg text-sm hover:bg-white/15 transition-all text-white" title="Thème">{dark ? '☀️' : '🌙'}</button>
+              </div>
+            </div>
+          </nav>
+          {drawerOpen && <>
+            <div className="drawer-overlay" onClick={() => setDrawerOpen(false)}/>
+            <div className="drawer open">
+              <div className="p-5 border-b" style={{borderColor:'rgba(91,138,114,0.15)'}}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="relative">{getAvatar(user, 48)}<div className="status-dot" style={{background: STATUS_COLORS[user.status||'available'], position:'absolute', bottom:2, right:2, border:'2px solid white'}}/></div>
+                  <div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate" style={{color:'var(--text)'}}>{user.email.split('@')[0]}</p><p className="text-xs" style={{color:'var(--text-secondary)'}}>{STATUS_LABELS[user.status||'available']}</p></div>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg" style={{background:'linear-gradient(135deg, rgba(91,138,114,0.1), rgba(196,133,106,0.08))', padding:'8px 12px'}}>
+                  <span className="text-lg font-bold" style={{color:'var(--primary)'}}>Lv.{xp.level}</span>
+                  <div className="flex-1"><div className="xp-bar"><div className="xp-fill" style={{width: xpPct+'%'}}/></div><p className="text-xs mt-0.5" style={{color:'var(--text-secondary)'}}>{xp.xp}/{xp.nextLevel} XP</p></div>
+                </div>
+              </div>
+              <div className="py-2">
+                {tabs.map(t => (
+                  <div key={t.id} onClick={() => { navigate('/' + t.id); setDrawerOpen(false); }} className={`drawer-item ${page===t.id?'active':''}`}>
+                    <span>{t.icon}</span><span className="flex-1">{t.label}</span>
+                    {t.badge > 0 && <span className="text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" style={{background:'var(--secondary)'}}>{t.badge}</span>}
+                  </div>
+                ))}
+              </div>
+              <div className="border-t py-2" style={{borderColor:'rgba(91,138,114,0.1)'}}>
+                <div onClick={() => { navigate('/profil/' + user._id); setDrawerOpen(false); }} className="drawer-item"><span>👤</span><span>Mon profil</span></div>
+                <div onClick={() => { logout(); setDrawerOpen(false); }} className="drawer-item" style={{color:'#e74c3c'}}><span>🚪</span><span>Déconnexion</span></div>
+              </div>
+            </div>
+          </>}
+        </>
+      );
+    }
+
+    // === PAGES ===
+    function Login({ navigate }) {
+      const { login } = useAuth();
+      const [form, setForm] = useState({ email: '', password: '' });
+      const [error, setError] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [forgotMode, setForgotMode] = useState(false);
+      const [resetEmail, setResetEmail] = useState('');
+      const [resetMsg, setResetMsg] = useState('');
+      const [verifyMode, setVerifyMode] = useState(false);
+      const [verifyEmail, setVerifyEmail] = useState('');
+      const [verifyCode, setVerifyCode] = useState('');
+      const [verifyStep, setVerifyStep] = useState(0);
+      const handleSubmit = async (e) => { e.preventDefault(); setError(''); setLoading(true); try { await login(form.email, form.password); navigate('/messages'); } catch (err) { setError(err.message); } finally { setLoading(false); } };
+      const handleForgot = async (e) => { e.preventDefault(); setResetMsg(''); try { const d = await api.post('/auth/forgot-password', { email: resetEmail }); setResetMsg('Code envoyé ! (voir la console serveur)'); } catch(err) { setResetMsg(err.message); } };
+      const handleVerify = async (e) => { e.preventDefault(); setResetMsg(''); try { if (verifyStep === 0) { await api.post('/auth/send-verification', { email: verifyEmail }); setResetMsg('Code envoyé ! (voir la console serveur)'); setVerifyStep(1); } else { await api.post('/auth/verify-email', { code: verifyCode }); setResetMsg('Email vérifié ! Tu peux te connecter.'); setVerifyMode(false); } } catch(err) { setResetMsg(err.message); } };
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] p-4">
+          <div className="modal-glass rounded-2xl shadow-xl p-8 w-full max-w-md page-slide">
+            <h1 className="text-3xl font-bold text-center text-gray-800 mb-1">TeenLink</h1>
+            <p className="text-center text-gray-400 mb-6 text-sm">{forgotMode ? 'Réinitialiser le mot de passe' : verifyMode ? 'Vérifier ton email' : 'Connecte-toi'}</p>
+            {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{error}</div>}
+            {resetMsg && <div className="bg-blue-50 text-blue-600 p-3 rounded-lg mb-4 text-sm">{resetMsg}</div>}
+            {!forgotMode && !verifyMode ? (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <input type="email" required placeholder="Email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none" />
+                <input type="password" required placeholder="Mot de passe" value={form.password} onChange={e => setForm({...form, password: e.target.value})} className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none" />
+                <button type="submit" disabled={loading} className="w-full btn-primary py-3 disabled:opacity-50">{loading ? 'Connexion...' : 'Se connecter'}</button>
+              </form>
+            ) : forgotMode ? (
+              <form onSubmit={handleForgot} className="space-y-4">
+                <input type="email" required placeholder="Ton email" value={resetEmail} onChange={e => setResetEmail(e.target.value)} className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none" />
+                <button type="submit" className="w-full btn-primary py-3">Envoyer le code</button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerify} className="space-y-4">
+                {verifyStep === 0 ? <input type="email" required placeholder="Ton email" value={verifyEmail} onChange={e => setVerifyEmail(e.target.value)} className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none" />
+                : <input type="text" required placeholder="Code de vérification" value={verifyCode} onChange={e => setVerifyCode(e.target.value)} className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none" />}
+                <button type="submit" className="w-full btn-primary py-3">{verifyStep === 0 ? 'Envoyer le code' : 'Vérifier'}</button>
+              </form>
+            )}
+            <div className="flex flex-col gap-2 mt-4 text-sm">
+              <div className="flex justify-between">
+                <button onClick={() => navigate('/inscription')} className="text-[var(--primary)] font-semibold hover:underline">S'inscrire</button>
+                <button onClick={() => { setForgotMode(!forgotMode); setResetMsg(''); setError(''); }} className="text-gray-400 hover:text-[var(--primary)]">
+                  {forgotMode ? 'Retour' : 'Mot de passe oublié ?'}
+                </button>
+              </div>
+              {!forgotMode && <button onClick={() => { setVerifyMode(!verifyMode); setResetMsg(''); setError(''); setVerifyStep(0); }} className="text-gray-400 hover:text-[var(--primary)] text-left">Vérifier mon email</button>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function Register({ navigate }) {
+      const { register } = useAuth();
+      const [step, setStep] = useState(1);
+      const [error, setError] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [form, setForm] = useState({ email:'', password:'', confirmPassword:'', age:'', sex:'', gender:'', hairColor:'', skinColor:'', eyeColor:'', height:'', weight:'', city:'', phone:'', interests:[] });
+      const u = (f, v) => setForm({...form, [f]: v});
+      const toggleI = (i) => u('interests', form.interests.includes(i) ? form.interests.filter(x => x !== i) : [...form.interests, i]);
+      const v1 = () => { if (!form.email || !form.password || form.password !== form.confirmPassword) { setError('Vérifie les champs'); return false; } if (form.password.length < 6) { setError('Mot de passe min 6 car.'); return false; } if (form.age < 13 || form.age > 18) { setError('Âge 13-18 ans'); return false; } if (!form.sex || !form.gender) { setError('Sexe et genre requis'); return false; } return true; };
+      const submit = async (e) => { e.preventDefault(); setError(''); if (!v1()) return; setLoading(true); try { const { confirmPassword, ...d } = form; d.age=+d.age; d.height=+d.height||0; d.weight=+d.weight||0; await register(d); navigate('/messages'); } catch(err) { setError(err.message); } finally { setLoading(false); } };
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] p-4">
+          <div className="modal-glass rounded-2xl shadow-xl p-6 w-full max-w-lg page-slide">
+            <h1 className="text-2xl font-bold text-center text-gray-800 mb-4">Inscription</h1>
+            <div className="flex justify-center mb-4">{[1,2].map(s=><div key={s} className="flex items-center"><div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step>=s?'bg-[var(--primary)] text-white':'bg-gray-200 text-gray-500'}`}>{s}</div>{s<2&&<div className={`w-8 h-0.5 ${step>s?'bg-[var(--primary)]':'bg-gray-200'}`}/>}</div>)}</div>
+            {error && <div className="bg-red-50 text-red-600 p-2 rounded-lg mb-3 text-sm">{error}</div>}
+            <form onSubmit={submit}>
+              {step===1 && <div className="space-y-3">
+                <input type="email" placeholder="Email *" required value={form.email} onChange={e=>u('email',e.target.value)} className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-sm"/>
+                <input type="tel" placeholder="Téléphone (optionnel)" value={form.phone} onChange={e=>u('phone',e.target.value)} className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-sm"/>
+                <input type="password" placeholder="Mot de passe *" required value={form.password} onChange={e=>u('password',e.target.value)} className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-sm"/>
+                <input type="password" placeholder="Confirmer *" required value={form.confirmPassword} onChange={e=>u('confirmPassword',e.target.value)} className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-sm"/>
+                <div className="grid grid-cols-2 gap-3">
+                  <input type="number" min="13" max="18" placeholder="Âge *" required value={form.age} onChange={e=>u('age',e.target.value)} className="px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-sm"/>
+                  <select required value={form.sex} onChange={e=>u('sex',e.target.value)} className="px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-sm"><option value="">Sexe *</option><option value="M">Masculin</option><option value="F">Féminin</option></select>
+                </div>
+                <select required value={form.gender} onChange={e=>u('gender',e.target.value)} className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-sm"><option value="">Genre *</option><option value="homme">Homme</option><option value="femme">Femme</option><option value="non-binaire">Non-binaire</option><option value="trans-masc">Trans-masc</option><option value="trans-fem">Trans-fem</option></select>
+                <input type="text" placeholder="Ville *" required value={form.city} onChange={e=>u('city',e.target.value)} className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-sm"/>
+                <button type="button" onClick={()=>{if(v1())setStep(2)}} className="w-full btn-primary py-2.5">Suivant</button>
+              </div>}
+              {step===2 && <div className="space-y-3">
+                <p className="text-sm text-gray-500">Centres d'intérêt (optionnel)</p>
+                <div className="flex flex-wrap gap-2">{INTERESTS.map(i=><button key={i} type="button" onClick={()=>toggleI(i)} className={`px-3 py-1 rounded-full text-xs font-medium ${form.interests.includes(i)?'bg-[var(--primary)] text-white':'bg-gray-100 text-gray-700'}`}>{i}</button>)}</div>
+                <div className="flex gap-2"><button type="button" onClick={()=>setStep(1)} className="flex-1 bg-gray-200 py-2.5 rounded-lg font-semibold">Retour</button><button type="submit" disabled={loading} className="flex-1 btn-primary py-2.5 disabled:opacity-50">{loading?'Création...':"S'inscrire"}</button></div>
+              </div>}
+            </form>
+            <p className="text-center text-gray-400 mt-4 text-sm">Déjà inscrit ? <button onClick={()=>navigate('/connexion')} className="text-[var(--primary)] font-semibold hover:underline">Se connecter</button></p>
+          </div>
+        </div>
+      );
+    }
+
+    function Messages({ navigate }) {
+      const [convos, setConvos] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [search, setSearch] = useState('');
+      const prevCount = useRef(0);
+      useEffect(() => { api.get('/messages/conversations').then(d => { if (d.length > prevCount.current && prevCount.current > 0) playNotifSound(); prevCount.current = d.length; setConvos(d); }).catch(console.error).finally(()=>setLoading(false)); }, []);
+      useEffect(() => { const i = setInterval(() => { api.get('/messages/conversations').then(d => { if (d.length > prevCount.current) playNotifSound(); prevCount.current = d.length; setConvos(d); }).catch(()=>{}); }, 8000); return () => clearInterval(i); }, []);
+      const filtered = convos.filter(c => !search || c.user.email.toLowerCase().includes(search.toLowerCase()));
+      if (loading) return <div className="max-w-xl mx-auto p-4 text-center text-gray-400 py-20">Chargement...</div>;
+      return (
+        <div className="max-w-xl mx-auto p-4 page-slide">
+          <h1 className="text-xl font-bold text-gray-800 mb-3">Messages</h1>
+          {convos.length > 0 && <input type="text" placeholder="🔍 Rechercher une conversation..." value={search} onChange={e => setSearch(e.target.value)} className="w-full px-4 py-2.5 border rounded-xl text-sm mb-4 focus:ring-2 focus:ring-[var(--primary)] outline-none"/>}
+          {filtered.length===0 ? <div className="text-center py-16"><p className="text-4xl mb-3">💬</p><p className="text-gray-400">{search ? 'Aucun résultat' : 'Aucune conversation'}</p>{!search && <button onClick={()=>navigate('/recherche')} className="text-[var(--primary)] text-sm hover:underline mt-1">Trouver des gens</button>}</div>
+          : <div className="space-y-2">{filtered.map(c=>(
+            <button key={c.user._id} onClick={()=>navigate('/chat/'+c.user._id)} className="w-full flex items-center gap-3 p-3 bg-white rounded-xl hover:bg-gray-50 transition shadow-sm text-left">
+              <div className="relative flex-shrink-0">{getAvatar(c.user, 44)}{isOnline(c.user.lastSeen) && <div className="online-dot"/>}</div>
+              <div className="flex-1 min-w-0"><div className="flex justify-between"><span className="font-semibold text-sm text-gray-800">{c.user.email.split('@')[0]}</span>{c.unread>0&&<span className="bg-[var(--primary)] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center bounce">{c.unread}</span>}</div>{c.lastMessage&&<p className="text-xs text-gray-400 truncate">{c.lastMessage.content}</p>}</div>
+            </button>
+          ))}</div>}
+        </div>
+      );
+    }
+
+    function Chat({ userId, navigate }) {
+      const { user: me } = useAuth();
+      const [msgs, setMsgs] = useState([]);
+      const [other, setOther] = useState(null);
+      const [text, setText] = useState('');
+      const [loading, setLoading] = useState(true);
+      const [showEmoji, setShowEmoji] = useState(false);
+      const [showStickers, setShowStickers] = useState(false);
+      const [stickers, setStickers] = useState([]);
+      const [recording, setRecording] = useState(false);
+      const [recordTime, setRecordTime] = useState(0);
+      const [reactMsgId, setReactMsgId] = useState(null);
+      const mediaRecorder = useRef(null);
+      const audioChunks = useRef([]);
+      const recordInterval = useRef(null);
+      const endRef = useRef(null);
+      const prevCount = useRef(0);
+      useEffect(() => { Promise.all([api.get('/messages/'+userId), api.get('/users/'+userId), api.get('/stickers')]).then(([m,u,s])=>{setMsgs(m);setOther(u);setStickers(s);prevCount.current=m.length;}).catch(()=>navigate('/messages')).finally(()=>setLoading(false)); }, [userId]);
+      useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
+      useEffect(() => { const i = setInterval(() => { api.get('/messages/'+userId).then(m => { if (m.length > prevCount.current) { playNotifSound(); setMsgs(m); } prevCount.current = m.length; }).catch(()=>{}); }, 5000); return () => clearInterval(i); }, [userId]);
+      const send = async (e) => { e.preventDefault(); if (!text.trim()) return; try { const m = await api.post('/messages', { receiverId: userId, content: text.trim() }); setMsgs([...msgs, m]); setText(''); } catch(err) { alert(err.message); } };
+      const sendSticker = async (sticker) => { try { const m = await api.post('/messages', { receiverId: userId, content: sticker.image }); setMsgs([...msgs, m]); setShowStickers(false); api.post('/stickers/' + sticker._id + '/download').catch(()=>{}); } catch(err) { alert(err.message); } };
+      const sendPhoto = async (e) => { const file = e.target.files[0]; if (!file) return; const r = new FileReader(); r.onloadend = async () => { try { const m = await api.post('/messages', { receiverId: userId, content: r.result }); setMsgs([...msgs, m]); } catch(err) { alert(err.message); } }; r.readAsDataURL(file); };
+      const toggleReaction = async (messageId, emoji) => { try { const r = await api.post('/messages/react', { messageId, emoji }); setMsgs(msgs.map(m => m._id === messageId ? {...m, reactions: r.reactions} : m)); setReactMsgId(null); } catch(err) {} };
+      const startRecording = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder.current = new MediaRecorder(stream);
+          audioChunks.current = [];
+          mediaRecorder.current.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.current.push(e.data); };
+          mediaRecorder.current.onstop = async () => {
+            const blob = new Blob(audioChunks.current, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+              try { const m = await api.post('/messages', { receiverId: userId, content: reader.result, type: 'voice' }); setMsgs([...msgs, m]); } catch(err) { alert(err.message); }
+            };
+            reader.readAsDataURL(blob);
+            stream.getTracks().forEach(t => t.stop());
+          };
+          mediaRecorder.current.start();
+          setRecording(true);
+          setRecordTime(0);
+          recordInterval.current = setInterval(() => setRecordTime(t => t + 1), 1000);
+        } catch(e) { alert('Microphone non disponible'); }
+      };
+      const stopRecording = () => { if (mediaRecorder.current && recording) { mediaRecorder.current.stop(); setRecording(false); clearInterval(recordInterval.current); } };
+      if (loading) return <div className="max-w-xl mx-auto p-4 text-center text-gray-400 py-20">Chargement...</div>;
+      return (
+        <div className="max-w-xl mx-auto p-4 flex flex-col h-screen page-slide">
+          <div className="flex items-center gap-3 mb-3 pb-3 border-b">
+            <button onClick={()=>navigate('/messages')} className="text-gray-400 hover:text-gray-700 text-lg">←</button>
+            <div className="relative">{getAvatar(other, 36)}{isOnline(other?.lastSeen) && <div className="online-dot"/>}</div>
+            <div><span className="font-semibold text-sm text-gray-800">{other?.email?.split('@')[0]}</span>{isOnline(other?.lastSeen) && <p className="text-xs text-green-500">En ligne</p>}</div>
+          </div>
+          <div className="flex-1 overflow-y-auto space-y-2 mb-3 chat-scroll">
+            {msgs.length===0&&<div className="text-center text-gray-300 py-8 text-sm">Commence la conversation !</div>}
+            {msgs.map(m=>(
+              <div key={m._id} className={`flex group ${m.sender._id===me.id?'justify-end':'justify-start'}`}>
+                <div className="relative">
+                  <div className={`max-w-[75%] px-3 py-2 rounded-2xl ${m.sender._id===me.id?'bg-[var(--primary)] text-white rounded-br-md shadow-md':'bg-gray-100 text-gray-800 rounded-bl-md'}`}>
+                    {m.content && m.content.startsWith('data:image') ? <img src={m.content} className="rounded-lg max-w-full" style={{maxHeight:200}}/>
+                      : m.type === 'voice' ? <audio controls src={m.content} className="max-w-full" style={{height:36}}/>
+                      : <p className="text-sm">{m.content}</p>}
+                    <p className={`text-xs mt-0.5 ${m.sender._id===me.id?'text-[var(--primary)]/80':'text-gray-400'}`}>{new Date(m.createdAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</p>
+                  </div>
+                  {m.sender._id !== me.id && <button onClick={() => setReactMsgId(reactMsgId === m._id ? null : m._id)} className="absolute -bottom-1 -right-1 bg-white rounded-full shadow px-1.5 py-0.5 text-xs opacity-0 group-hover:opacity-100 transition">😊</button>}
+                  {reactMsgId === m._id && <div className="absolute -bottom-8 right-0 bg-white shadow-lg rounded-full px-2 py-1 flex gap-0.5 z-10 pop-in">{REACTION_EMOJIS.map(e => <button key={e} onClick={() => toggleReaction(m._id, e)} className="text-sm hover:scale-125 transition">{e}</button>)}</div>}
+                  {m.reactions && Object.keys(m.reactions).length > 0 && <div className="flex gap-1 mt-0.5 flex-wrap">{Object.entries(m.reactions).map(([e, v]) => <span key={e} className={`text-xs px-1.5 py-0.5 rounded-full cursor-pointer ${v.includes(me.id)?'bg-[var(--primary)]/10 text-[var(--primary)]':'bg-gray-100 text-gray-500'}`} onClick={() => toggleReaction(m._id, e)}>{e} {v.length}</span>)}</div>}
+                </div>
+              </div>
+            ))}
+            <div ref={endRef}/>
+          </div>
+          <div className="relative">
+            {showEmoji && <EmojiPicker onSelect={(e) => setText(text + e)} onClose={() => setShowEmoji(false)}/>}
+            {showStickers && <div className="absolute bottom-full mb-2 right-0 bg-white shadow-xl rounded-xl p-3 pop-in z-50" style={{width: 300, maxHeight: 250, overflowY: 'auto'}}>
+              <p className="text-xs text-gray-400 mb-2">Stickers</p>
+              <div className="grid grid-cols-5 gap-2">{stickers.map(s => <button key={s._id} onClick={() => sendSticker(s)} className="text-3xl hover:scale-110 transition p-1 rounded-lg hover:bg-gray-100" title={s.name}>{s.emoji || '🎨'}</button>)}</div>
+            </div>}
+            {recording ? (
+              <div className="flex items-center gap-3 bg-red-50 rounded-full px-4 py-2">
+                <div className="voice-btn voice-recording" onClick={stopRecording}><span className="text-white text-lg">⏹</span></div>
+                <span className="text-red-500 font-semibold text-sm">{Math.floor(recordTime/60)}:{String(recordTime%60).padStart(2,'0')}</span>
+                <span className="text-xs text-red-400 flex-1 text-center">Enregistrement...</span>
+              </div>
+            ) : (
+              <form onSubmit={send} className="flex gap-2">
+                <button type="button" onClick={() => { setShowEmoji(!showEmoji); setShowStickers(false); }} className="text-xl hover:scale-110 transition">😊</button>
+                <button type="button" onClick={() => { setShowStickers(!showStickers); setShowEmoji(false); }} className="text-xl hover:scale-110 transition" title="Stickers">🎨</button>
+                <label className="text-xl cursor-pointer hover:scale-110 transition flex items-center">📷<input type="file" accept="image/*" onChange={sendPhoto} className="hidden"/></label>
+                <button type="button" onClick={startRecording} className="text-xl hover:scale-110 transition" title="Message vocal">🎙️</button>
+                <input value={text} onChange={e=>setText(e.target.value)} placeholder="Écrire..." className="flex-1 px-4 py-2.5 border rounded-full text-sm focus:ring-2 focus:ring-[var(--primary)] outline-none"/>
+                <button type="submit" disabled={!text.trim()} className="btn-primary px-5 py-2.5 rounded-full text-sm disabled:opacity-50">Envoyer</button>
+              </form>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function Search({ navigate }) {
+      const [users, setUsers] = useState([]);
+      const [suggested, setSuggested] = useState([]);
+      const [loading, setLoading] = useState(false);
+      const [filters, setFilters] = useState({ city:'', ageMin:'', ageMax:'', interests:'' });
+      const [tab, setTab] = useState('search');
+      const search = async (e) => { e?.preventDefault(); setLoading(true); try { const p = new URLSearchParams(); if (filters.city) p.append('city',filters.city); if (filters.ageMin) p.append('ageMin',filters.ageMin); if (filters.ageMax) p.append('ageMax',filters.ageMax); if (filters.interests) p.append('interests',filters.interests); setUsers(await api.get('/users/search?'+p.toString())); } catch(err){console.error(err);} finally{setLoading(false);} };
+      useEffect(()=>{search(); api.get('/users/suggested').then(setSuggested).catch(()=>{});},[]);
+      const renderCard = (u) => (
+        <div key={u._id} className="bg-white rounded-xl shadow-sm p-4 hover:shadow transition">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="relative flex-shrink-0">{getAvatar(u,48)}{isOnline(u.lastSeen) && <div className="online-dot"/>}</div>
+            <div><button onClick={()=>navigate('/profil/'+u._id)} className="font-semibold text-sm text-gray-800 hover:text-[var(--primary)]">{u.email.split('@')[0]}</button><p className="text-xs text-gray-400">{u.age} ans · {u.city}</p></div>
+          </div>
+          {u.bio && <p className="text-xs text-gray-500 mb-2 italic">"{u.bio}"</p>}
+          <div className="flex flex-wrap gap-1 mb-2">{u.interests?.slice(0,3).map(i=><span key={i} className="bg-[var(--primary)]/5 text-[var(--primary)] text-xs px-2 py-0.5 rounded-full">{i}</span>)}</div>
+          <button onClick={()=>navigate('/profil/'+u._id)} className="w-full bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-200">Voir profil</button>
+        </div>
+      );
+      return (
+        <div className="max-w-3xl mx-auto p-4 fade-in">
+          <h1 className="text-xl font-bold text-gray-800 mb-4">Recherche</h1>
+          <div className="flex gap-2 mb-4">
+            <button onClick={()=>setTab('search')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab==='search'?'btn-primary':'bg-gray-200 text-gray-600'}`}>Recherche</button>
+            <button onClick={()=>setTab('suggested')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab==='suggested'?'btn-primary':'bg-gray-200 text-gray-600'}`}>Suggestions ({suggested.length})</button>
+          </div>
+          {tab==='search' ? (<>
+            <form onSubmit={search} className="bg-white rounded-xl shadow-sm p-4 mb-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <input placeholder="Ville" value={filters.city} onChange={e=>setFilters({...filters,city:e.target.value})} className="px-3 py-2 border rounded-lg text-sm"/>
+                <input type="number" min="13" max="18" placeholder="Âge min" value={filters.ageMin} onChange={e=>setFilters({...filters,ageMin:e.target.value})} className="px-3 py-2 border rounded-lg text-sm"/>
+                <input type="number" min="13" max="18" placeholder="Âge max" value={filters.ageMax} onChange={e=>setFilters({...filters,ageMax:e.target.value})} className="px-3 py-2 border rounded-lg text-sm"/>
+                <select value={filters.interests} onChange={e=>setFilters({...filters,interests:e.target.value})} className="px-3 py-2 border rounded-lg text-sm"><option value="">Intérêt</option>{INTERESTS.map(i=><option key={i}>{i}</option>)}</select>
+              </div>
+              <button type="submit" className="mt-3 btn-primary px-5 py-2">Rechercher</button>
+            </form>
+            {loading ? <div className="text-center text-gray-400 py-8">Recherche...</div>
+            : users.length===0 ? <div className="text-center py-10"><p className="text-4xl mb-2">🔍</p><p className="text-gray-400 text-sm">Aucun résultat</p></div>
+            : <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{users.map(renderCard)}</div>}
+          </>) : (<>
+            {suggested.length===0 ? <div className="text-center py-10"><p className="text-4xl mb-2">💡</p><p className="text-gray-400 text-sm">Aucune suggestion</p></div>
+            : <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{suggested.map(renderCard)}</div>}
+          </>)}
+        </div>
+      );
+    }
+
+    function Friends({ navigate }) {
+      const [friends, setFriends] = useState([]);
+      const [pending, setPending] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const fetch = async () => { try { const [f,p] = await Promise.all([api.get('/friends/list'), api.get('/friends/pending')]); setFriends(f); setPending(p); } catch(e){} finally{setLoading(false);} };
+      useEffect(()=>{fetch();},[]);
+      const accept = async (id) => { try { await api.put('/friends/accept/'+id); fetch(); } catch(e){alert(e.message);} };
+      const reject = async (id) => { try { await api.put('/friends/reject/'+id); fetch(); } catch(e){alert(e.message);} };
+      if (loading) return <div className="max-w-xl mx-auto p-4 text-center text-gray-400 py-20">Chargement...</div>;
+      return (
+        <div className="max-w-xl mx-auto p-4 fade-in">
+          <h1 className="text-xl font-bold text-gray-800 mb-4">Amis</h1>
+          {pending.length>0&&<div className="mb-6"><h2 className="text-sm font-semibold text-gray-500 mb-2">Demandes ({pending.length})</h2><div className="space-y-2">{pending.map(r=>(
+            <div key={r._id} className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2"><div className="relative">{getAvatar(r.sender,36)}{isOnline(r.sender.lastSeen) && <div className="online-dot"/>}</div><div><button onClick={()=>navigate('/profil/'+r.sender._id)} className="font-semibold text-sm hover:text-[var(--primary)]">{r.sender.email.split('@')[0]}</button><p className="text-xs text-gray-400">{r.sender.age} ans</p></div></div>
+              <div className="flex gap-1"><button onClick={()=>accept(r._id)} className="bg-green-500 text-white px-3 py-1 rounded-lg text-xs font-semibold">Accepter</button><button onClick={()=>reject(r._id)} className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-semibold">Refuser</button></div>
+            </div>
+          ))}</div></div>}
+          <h2 className="text-sm font-semibold text-gray-500 mb-2">Mes amis ({friends.length})</h2>
+          {friends.length===0 ? <div className="text-center py-8"><p className="text-4xl mb-2">👥</p><button onClick={()=>navigate('/recherche')} className="text-[var(--primary)] text-sm hover:underline">Trouver des amis</button></div>
+          : <div className="space-y-2">{friends.map(f=>(
+            <button key={f._id} onClick={()=>navigate('/chat/'+f._id)} className="w-full flex items-center gap-3 p-3 bg-white rounded-xl hover:bg-gray-50 transition shadow-sm text-left">
+              <div className="relative flex-shrink-0">{getAvatar(f,40)}{isOnline(f.lastSeen) && <div className="online-dot"/>}</div>
+              <div><span className="font-semibold text-sm">{f.email.split('@')[0]}</span><p className="text-xs text-gray-400">{f.age} ans · {f.city}</p></div>
+            </button>
+          ))}</div>}
+        </div>
+      );
+    }
+
+    function Account() {
+      const { user, updateUser } = useAuth();
+      const [form, setForm] = useState({ phone:user?.phone||'', city:user?.city||'', height:user?.height||'', weight:user?.weight||'', hairColor:user?.hairColor||'', skinColor:user?.skinColor||'', eyeColor:user?.eyeColor||'', interests:user?.interests||[], bio:user?.bio||'' });
+      const [privacy, setPrivacy] = useState({ showAge:user?.privacy?.showAge!==false, showCity:user?.privacy?.showCity!==false, showPhotos:user?.privacy?.showPhotos!==false });
+      const [pwForm, setPwForm] = useState({ currentPassword:'', newPassword:'', confirmPassword:'' });
+      const [msg, setMsg] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [pwMsg, setPwMsg] = useState('');
+      const u = (f,v) => setForm({...form,[f]:v});
+      const toggleI = (i) => u('interests', form.interests.includes(i)?form.interests.filter(x=>x!==i):[...form.interests,i]);
+      const uploadPhoto = (e, idx) => { const file=e.target.files[0]; if(!file) return; const r=new FileReader(); r.onloadend = async()=>{ const p=[...(user.photos||[])]; p[idx]=r.result; try{await updateUser({photos:p}); setMsg('Photo mise à jour !');}catch(e){setMsg('Erreur');} }; r.readAsDataURL(file); };
+      const removePhoto = async (idx) => { const p=[...(user.photos||[])]; p.splice(idx,1); try{await updateUser({photos:p});}catch(e){} };
+      const submit = async (e) => { e.preventDefault(); setLoading(true); setMsg(''); try { await updateUser({...form, height:+form.height||0, weight:+form.weight||0, privacy}); setMsg('Sauvegardé !'); } catch(e){setMsg('Erreur');} finally{setLoading(false);} };
+      const changePw = async (e) => { e.preventDefault(); setPwMsg(''); if (pwForm.newPassword !== pwForm.confirmPassword) { setPwMsg('Les mots de passe ne correspondent pas'); return; } try { await api.post('/auth/change-password', pwForm); setPwMsg('Mot de passe changé !'); setPwForm({ currentPassword:'', newPassword:'', confirmPassword:'' }); } catch(err) { setPwMsg(err.message); } };
+      return (
+        <div className="max-w-xl mx-auto p-4 fade-in">
+          <h1 className="text-xl font-bold text-gray-800 mb-4">Mon Compte</h1>
+          {msg&&<div className={`p-2 rounded-lg mb-3 text-sm ${msg.includes('Erreur')?'bg-red-50 text-red-600':'bg-green-50 text-green-600'}`}>{msg}</div>}
+          <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+            <h2 className="text-sm font-semibold text-gray-500 mb-3">Photos (max 3)</h2>
+            <div className="grid grid-cols-3 gap-3">{[0,1,2].map(i=>(
+              <div key={i} className="relative aspect-square bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
+                {user?.photos?.[i] ? <><img src={user.photos[i]} className="w-full h-full object-cover"/><button onClick={()=>removePhoto(i)} className="absolute top-1 right-1 bg-red-500 text-white w-5 h-5 rounded-full text-xs">×</button></>
+                : <label className="cursor-pointer w-full h-full flex items-center justify-center hover:bg-gray-200"><span className="text-2xl text-gray-300">+</span><input type="file" accept="image/*" onChange={e=>uploadPhoto(e,i)} className="hidden"/></label>}
+              </div>
+            ))}</div>
+          </div>
+          <form onSubmit={submit} className="bg-white rounded-xl shadow-sm p-4 space-y-3 mb-4">
+            <h2 className="text-sm font-semibold text-gray-500">Informations</h2>
+            <input value={user?.email} disabled className="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm text-gray-400"/>
+            <textarea placeholder="Bio / Description de toi..." value={form.bio} onChange={e=>u('bio',e.target.value)} maxLength={200} className="w-full px-3 py-2 border rounded-lg text-sm resize-none" rows={2}/>
+            <input placeholder="Téléphone" value={form.phone} onChange={e=>u('phone',e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm"/>
+            <div className="grid grid-cols-3 gap-2">
+              <select value={form.hairColor} onChange={e=>u('hairColor',e.target.value)} className="px-2 py-2 border rounded-lg text-xs">{HAIR.map(c=><option key={c}>{c}</option>)}</select>
+              <select value={form.skinColor} onChange={e=>u('skinColor',e.target.value)} className="px-2 py-2 border rounded-lg text-xs">{SKIN.map(c=><option key={c}>{c}</option>)}</select>
+              <select value={form.eyeColor} onChange={e=>u('eyeColor',e.target.value)} className="px-2 py-2 border rounded-lg text-xs">{EYES.map(c=><option key={c}>{c}</option>)}</select>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <input placeholder="Ville" value={form.city} onChange={e=>u('city',e.target.value)} className="px-3 py-2 border rounded-lg text-sm"/>
+              <input type="number" placeholder="Taille cm" value={form.height} onChange={e=>u('height',e.target.value)} className="px-3 py-2 border rounded-lg text-sm"/>
+              <input type="number" placeholder="Poids kg" value={form.weight} onChange={e=>u('weight',e.target.value)} className="px-3 py-2 border rounded-lg text-sm"/>
+            </div>
+            <div><p className="text-xs text-gray-500 mb-1">Centres d'intérêt</p><div className="flex flex-wrap gap-1">{INTERESTS.map(i=><button key={i} type="button" onClick={()=>toggleI(i)} className={`px-2 py-0.5 rounded-full text-xs ${form.interests.includes(i)?'bg-[var(--primary)] text-white':'bg-gray-100 text-gray-600'}`}>{i}</button>)}</div></div>
+            <button type="submit" disabled={loading} className="w-full btn-primary py-2 disabled:opacity-50">{loading?'Sauvegarde...':'Sauvegarder'}</button>
+          </form>
+          <div className="bg-white rounded-xl shadow-sm p-4 space-y-3 mb-4">
+            <h2 className="text-sm font-semibold text-gray-500">Confidentialité</h2>
+            <label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={privacy.showAge} onChange={e=>setPrivacy({...privacy,showAge:e.target.checked})} className="rounded"/><span>Afficher mon âge</span></label>
+            <label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={privacy.showCity} onChange={e=>setPrivacy({...privacy,showCity:e.target.checked})} className="rounded"/><span>Afficher ma ville</span></label>
+            <label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={privacy.showPhotos} onChange={e=>setPrivacy({...privacy,showPhotos:e.target.checked})} className="rounded"/><span>Afficher mes photos</span></label>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm p-4 space-y-3">
+            <h2 className="text-sm font-semibold text-gray-500">Changer le mot de passe</h2>
+            {pwMsg&&<div className={`p-2 rounded-lg text-sm ${pwMsg.includes('Erreur')||pwMsg.includes('ne correspondent')?'bg-red-50 text-red-600':'bg-green-50 text-green-600'}`}>{pwMsg}</div>}
+            <form onSubmit={changePw} className="space-y-2">
+              <input type="password" placeholder="Mot de passe actuel" required value={pwForm.currentPassword} onChange={e=>setPwForm({...pwForm,currentPassword:e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm"/>
+              <input type="password" placeholder="Nouveau mot de passe (min 6 car.)" required value={pwForm.newPassword} onChange={e=>setPwForm({...pwForm,newPassword:e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm"/>
+              <input type="password" placeholder="Confirmer" required value={pwForm.confirmPassword} onChange={e=>setPwForm({...pwForm,confirmPassword:e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm"/>
+              <button type="submit" className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300">Changer</button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    function Profile({ userId, navigate }) {
+      const { user: me } = useAuth();
+      const [profile, setProfile] = useState(null);
+      const [status, setStatus] = useState({ status: 'none' });
+      const [loading, setLoading] = useState(true);
+      const [likeData, setLikeData] = useState({ liked: false, count: 0 });
+      const [showReport, setShowReport] = useState(false);
+      const [reportReason, setReportReason] = useState('');
+      const [showMenu, setShowMenu] = useState(false);
+      const [compat, setCompat] = useState(null);
+      const [mutualFriends, setMutualFriends] = useState([]);
+      const isBlocked = me?.blockedUsers?.includes(userId);
+      useEffect(()=>{Promise.all([api.get('/users/'+userId),api.get('/friends/status/'+userId),api.get('/likes/check?userId='+userId),api.get('/users/compatibility?userId='+userId),api.get('/users/mutual-friends?userId='+userId)]).then(([p,s,l,c,mf])=>{setProfile(p);setStatus(s);setLikeData(l);setCompat(c);setMutualFriends(mf);}).catch(()=>{}).finally(()=>setLoading(false));},[userId]);
+      const addFriend = async()=>{try{await api.post('/friends/request',{receiverId:userId});setStatus({status:'pending'});}catch(e){alert(e.message);}};
+      const toggleLike = async()=>{try{if(likeData.liked){await api.post('/likes/unlike',{userId});setLikeData({liked:false,count:likeData.count-1});}else{await api.post('/likes',{userId});setLikeData({liked:true,count:likeData.count+1});}}catch(e){alert(e.message);}};
+      const blockUser = async()=>{if(!confirm('Bloquer cette personne ?'))return;try{await api.post('/users/block',{userId});alert('Utilisateur bloqué');navigate('/recherche');}catch(e){alert(e.message);}};
+      const unblockUser = async()=>{try{await api.post('/users/unblock',{userId});setProfile({...profile});alert('Débloqué');}catch(e){alert(e.message);}};
+      const reportUser = async()=>{if(!reportReason){alert('Choisissez une raison');return;}try{await api.post('/reports',{reportedUser:userId,reason:reportReason});setShowReport(false);setReportReason('');alert('Signalement envoyé');}catch(e){alert(e.message);}};
+      if (loading) return <div className="max-w-xl mx-auto p-4 text-center text-gray-400 py-20">Chargement...</div>;
+      if (!profile) return <div className="max-w-xl mx-auto p-4 text-center text-gray-400 py-20">Non trouvé</div>;
+      if (isBlocked) return <div className="max-w-xl mx-auto p-4 text-center py-20"><p className="text-gray-400 mb-4">Cet utilisateur est bloqué</p><button onClick={unblockUser} className="text-[var(--primary)] text-sm hover:underline">Débloquer</button></div>;
+      const own = me.id === userId;
+      const compatColor = compat?.score >= 70 ? '#22c55e' : compat?.score >= 40 ? '#f59e0b' : '#ef4444';
+      return (
+        <div className="max-w-xl mx-auto p-4 fade-in">
+          <div className="card-nature rounded-2xl overflow-hidden">
+            <div className="profile-header h-24"/>
+            <div className="px-5 pb-5">
+              <div className="flex items-end gap-3 -mt-10 mb-3">
+                <div className="relative">{getAvatar(profile, 80)}{isOnline(profile.lastSeen) && <div className="online-dot" style={{borderColor:'white'}}/>}</div>
+                <div className="pb-1 flex-1">
+                  <h1 className="text-lg font-bold text-gray-800">{profile.email.split('@')[0]}</h1>
+                  <p className="text-xs text-gray-400">{profile.age} ans · {profile.city} {isOnline(profile.lastSeen) && <span className="text-green-500 font-medium">· En ligne</span>}</p>
+                </div>
+                {!own && <div className="relative">
+                  <button onClick={()=>setShowMenu(!showMenu)} className="text-gray-400 hover:text-gray-600 text-xl">⋯</button>
+                  {showMenu && <div className="absolute right-0 top-8 bg-white shadow-lg rounded-lg py-1 z-10 w-40 text-sm">
+                    <button onClick={()=>{blockUser();setShowMenu(false);}} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600">Bloquer</button>
+                    <button onClick={()=>{setShowReport(true);setShowMenu(false);}} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-orange-600">Signaler</button>
+                  </div>}
+                </div>}
+              </div>
+              {profile.bio && <p className="text-sm text-gray-600 mb-3 italic bg-gray-50 rounded-lg p-3">"{profile.bio}"</p>}
+              <Badges userId={userId}/>
+              {!own && compat && compat.score > 0 && (
+                <div className="flex items-center gap-3 mb-3 bg-gray-50 rounded-xl p-3">
+                  <div className="compat-ring" style={{border: `3px solid ${compatColor}`, color: compatColor}}>{compat.score}%</div>
+                  <div><p className="text-xs font-semibold text-gray-600">Score de compatibilité</p><p className="text-xs text-gray-400">Basé sur vos centres d'intérêt et votre profil</p></div>
+                </div>
+              )}
+              {!own&&<div className="mb-4 flex gap-2 items-center">
+                {status.status==='none'&&<button onClick={addFriend} className="btn-primary px-5 py-1.5 rounded-lg text-sm">Ajouter en ami</button>}
+                {status.status==='pending'&&<span className="bg-yellow-100 text-yellow-700 px-4 py-1.5 rounded-lg text-xs font-medium">Demande envoyée</span>}
+                {status.status==='accepted'&&<button onClick={()=>navigate('/chat/'+userId)} className="bg-green-500 text-white px-5 py-1.5 rounded-lg text-sm font-semibold hover:bg-green-600">Envoyer un message</button>}
+                <button onClick={toggleLike} className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${likeData.liked?'bg-pink-500 text-white':'bg-pink-100 text-pink-600'}`}>
+                  {likeData.liked ? '❤️' : '🤍'} {likeData.count > 0 ? likeData.count : ''}
+                </button>
+              </div>}
+              {mutualFriends.length > 0 && (
+                <div className="mb-4 bg-gray-50 rounded-xl p-3">
+                  <p className="text-xs font-semibold text-gray-500 mb-2">👥 Amis en commun ({mutualFriends.length})</p>
+                  <div className="flex flex-wrap gap-2">
+                    {mutualFriends.slice(0, 6).map(f => (
+                      <button key={f._id} onClick={() => navigate('/profil/' + f._id)} className="flex items-center gap-1 bg-white px-2 py-1 rounded-full text-xs hover:bg-gray-100">
+                        {getAvatar(f, 20)}<span>{f.email.split('@')[0]}</span>
+                      </button>
+                    ))}
+                    {mutualFriends.length > 6 && <span className="text-xs text-gray-400">+{mutualFriends.length - 6}</span>}
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
+                <div className="bg-gray-50 rounded-xl p-3"><p className="font-medium text-gray-500 mb-1">À propos</p><p>Sexe : {profile.sex==='M'?'Masculin':'Féminin'}</p><p>Genre : {profile.gender}</p><p>Taille : {profile.height} cm</p><p>Poids : {profile.weight} kg</p></div>
+                <div className="bg-gray-50 rounded-xl p-3"><p className="font-medium text-gray-500 mb-1">Apparence</p><p>Cheveux : {profile.hairColor}</p><p>Peau : {profile.skinColor}</p><p>Yeux : {profile.eyeColor}</p></div>
+              </div>
+              {profile.interests?.length>0&&<div><p className="text-xs text-gray-500 mb-1">Centres d'intérêt</p><div className="flex flex-wrap gap-1">{profile.interests.map(i=><span key={i} className="bg-[var(--primary)]/5 text-[var(--primary)] text-xs px-2 py-0.5 rounded-full">{i}</span>)}</div></div>}
+            </div>
+          </div>
+          {showReport && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="modal-glass rounded-2xl p-6 w-full max-w-sm">
+              <h3 className="font-bold text-lg mb-3">Signaler</h3>
+              <select value={reportReason} onChange={e=>setReportReason(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm mb-3">
+                <option value="">Choisir une raison...</option>
+                <option value="spam">Spam</option>
+                <option value="inappropriate">Contenu inapproprié</option>
+                <option value="harassment">Harcèlement</option>
+                <option value="fake">Faux profil</option>
+                <option value="underaged">Mineur se faisant passer pour majeur</option>
+                <option value="other">Autre</option>
+              </select>
+              <div className="flex gap-2"><button onClick={()=>setShowReport(false)} className="flex-1 bg-gray-200 py-2 rounded-lg text-sm font-semibold">Annuler</button><button onClick={reportUser} className="flex-1 bg-red-500 text-white py-2 rounded-lg text-sm font-semibold">Signaler</button></div>
+            </div>
+          </div>}
+        </div>
+      );
+    }
+
+    // === STORIES PAGE ===
+    function Stories({ navigate }) {
+      const { user } = useAuth();
+      const [stories, setStories] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [showCreate, setShowCreate] = useState(false);
+      const [caption, setCaption] = useState('');
+      const [selectedEmoji, setSelectedEmoji] = useState('');
+      const emojis = ['😀','😂','😍','🥺','😎','🤩','🥳','😴','🤔','😈','💀','🤡','👻','🎃','🦄','🌈','🔥','⭐','💫','🎵','🎮','⚽','🏀','🍕','🍔','🍟','🍿','☕','🍩','🎂','🍰','🎁','🎄','🎯','🎲','🎸','🎹','🎺','🎷','📸','✈️','🚀','🌍','🐶','🐱','🦊','🐻','🐼'];
+      const fetchStories = () => api.get('/stories').then(setStories).catch(()=>{}).finally(()=>setLoading(false));
+      useEffect(() => { fetchStories(); }, []);
+      const createStory = async () => { if (!selectedEmoji) return; try { await api.post('/stories', { content: selectedEmoji, caption }); setShowCreate(false); setSelectedEmoji(''); setCaption(''); fetchStories(); } catch(e) { alert(e.message); } };
+      const reactStory = async (storyId, emoji) => { try { await api.post('/stories/' + storyId + '/react', { emoji }); fetchStories(); } catch(e) {} };
+      const deleteStory = async (storyId) => { if (!confirm('Supprimer cette story ?')) return; try { await api.del('/stories/' + storyId); fetchStories(); } catch(e) {} };
+      const myStory = stories.find(s => s.isMine);
+      if (loading) return <div className="max-w-xl mx-auto p-4 text-center text-gray-400 py-20">Chargement...</div>;
+      return (
+        <div className="max-w-xl mx-auto p-4 page-slide">
+          <h1 className="text-xl font-bold text-gray-800 mb-4">📱 Stories</h1>
+          <div className="mb-4">
+            <div className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm">
+              {getAvatar(user, 48)}
+              <div className="flex-1">
+                {myStory ? <div><p className="text-sm font-semibold">Ta story</p><p className="text-xs text-gray-400">{myStory.content} {myStory.caption} · Expire dans {Math.max(0, 24 - Math.floor((Date.now() - new Date(myStory.createdAt).getTime()) / 3600000))}h</p></div>
+                : <button onClick={() => setShowCreate(true)} className="text-left text-sm text-gray-400 hover:text-[var(--primary)]">Créer une story...</button>}
+              </div>
+              {myStory && <button onClick={() => deleteStory(myStory._id)} className="text-red-400 text-xs hover:text-red-600">Suppr.</button>}
+              <button onClick={() => setShowCreate(true)} className="btn-primary px-3 py-1.5">+</button>
+            </div>
+          </div>
+          {stories.filter(s => !s.isMine).length === 0 && !myStory && <div className="text-center py-12"><p className="text-4xl mb-2">📱</p><p className="text-gray-400 text-sm">Aucune story pour l'instant</p></div>}
+          <div className="space-y-3">
+            {stories.filter(s => !s.isMine).map(s => (
+              <div key={s._id} className="bg-white rounded-xl shadow-sm p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="relative">{getAvatar(s.user, 32)}{isOnline(s.user?.lastSeen) && <div className="online-dot"/>}</div>
+                  <button onClick={() => navigate('/profil/' + s.user._id)} className="font-semibold text-sm hover:text-[var(--primary)]">{s.user?.email?.split('@')[0]}</button>
+                  <span className="text-xs text-gray-400 ml-auto">{new Date(s.createdAt).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})}</span>
+                </div>
+                <div className="text-center py-4"><span className="text-6xl">{s.content}</span>{s.caption && <p className="text-sm text-gray-500 mt-2">{s.caption}</p>}</div>
+                <div className="flex gap-1 mt-2">{REACTION_EMOJIS.map(e => <button key={e} onClick={() => reactStory(s._id, e)} className="text-lg hover:scale-125 transition px-1">{e}</button>)}</div>
+                {s.reactions && Object.keys(s.reactions).length > 0 && <div className="flex gap-1 mt-1">{Object.entries(s.reactions).map(([e, v]) => <span key={e} className="text-xs bg-gray-100 px-1.5 py-0.5 rounded-full">{e} {v.length}</span>)}</div>}
+              </div>
+            ))}
+          </div>
+          {showCreate && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="modal-glass rounded-2xl p-6 w-full max-w-sm max-h-[80vh] overflow-y-auto">
+              <h3 className="font-bold text-lg mb-3">Nouvelle Story</h3>
+              <p className="text-xs text-gray-400 mb-2">Choisis un emoji :</p>
+              <div className="grid grid-cols-8 gap-1 mb-3">{emojis.map(e => <button key={e} onClick={() => setSelectedEmoji(e)} className={`text-2xl p-1 rounded-lg ${selectedEmoji===e?'bg-[var(--primary)]/10 ring-2 ring-[var(--primary)]':'hover:bg-gray-100'}`}>{e}</button>)}</div>
+              <input placeholder="Légende (optionnel)" value={caption} onChange={e => setCaption(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm mb-3"/>
+              <div className="flex gap-2"><button onClick={() => setShowCreate(false)} className="flex-1 bg-gray-200 py-2 rounded-lg text-sm font-semibold">Annuler</button><button onClick={createStory} disabled={!selectedEmoji} className="flex-1 btn-primary py-2 disabled:opacity-50">Publier</button></div>
+            </div>
+          </div>}
+        </div>
+      );
+    }
+
+    // === EXPLORER PAGE ===
+    function Explorer({ navigate }) {
+      const [profiles, setProfiles] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [filters, setFilters] = useState({ city: '', interest: '', ageMin: '', ageMax: '' });
+      const explore = (e) => { e?.preventDefault(); setLoading(true); const p = new URLSearchParams(); if (filters.city) p.append('city', filters.city); if (filters.interest) p.append('interest', filters.interest); if (filters.ageMin) p.append('ageMin', filters.ageMin); if (filters.ageMax) p.append('ageMax', filters.ageMax); api.get('/users/explore?' + p.toString()).then(setProfiles).catch(()=>{}).finally(()=>setLoading(false)); };
+      useEffect(() => { explore(); }, []);
+      return (
+        <div className="max-w-xl mx-auto p-4 page-slide">
+          <h1 className="text-xl font-bold text-gray-800 mb-4">🧭 Explorer</h1>
+          <form onSubmit={explore} className="bg-white rounded-xl shadow-sm p-3 mb-4">
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <input placeholder="Ville" value={filters.city} onChange={e => setFilters({...filters, city: e.target.value})} className="px-3 py-2 border rounded-lg text-sm"/>
+              <select value={filters.interest} onChange={e => setFilters({...filters, interest: e.target.value})} className="px-3 py-2 border rounded-lg text-sm"><option value="">Intérêt</option>{INTERESTS.map(i => <option key={i}>{i}</option>)}</select>
+            </div>
+            <div className="flex gap-2 items-center">
+              <input type="number" min="13" max="18" placeholder="Âge min" value={filters.ageMin} onChange={e => setFilters({...filters, ageMin: e.target.value})} className="px-3 py-2 border rounded-lg text-sm w-20"/>
+              <input type="number" min="13" max="18" placeholder="Âge max" value={filters.ageMax} onChange={e => setFilters({...filters, ageMax: e.target.value})} className="px-3 py-2 border rounded-lg text-sm w-20"/>
+              <button type="submit" className="flex-1 btn-primary py-2">Découvrir</button>
+            </div>
+          </form>
+          {loading ? <div className="text-center text-gray-400 py-8">Chargement...</div>
+          : profiles.length === 0 ? <div className="text-center py-12"><p className="text-4xl mb-2">🌍</p><p className="text-gray-400 text-sm">Aucun profil trouvé. Essaie d'autres filtres !</p></div>
+          : <div className="space-y-3">{profiles.map(u => (
+            <div key={u._id} className="bg-white rounded-xl shadow-sm p-4 hover:shadow transition">
+              <div className="flex items-center gap-3">
+                <div className="relative">{getAvatar(u, 52)}{isOnline(u.lastSeen) && <div className="online-dot"/>}</div>
+                <div className="flex-1 min-w-0">
+                  <button onClick={() => navigate('/profil/' + u._id)} className="font-semibold text-sm text-gray-800 hover:text-[var(--primary)]">{u.email.split('@')[0]}</button>
+                  <p className="text-xs text-gray-400">{u.age} ans · {u.city}</p>
+                  {u.interests?.length > 0 && <div className="flex flex-wrap gap-1 mt-1">{u.interests.slice(0, 3).map(i => <span key={i} className="bg-[var(--primary)]/5 text-[var(--primary)] text-xs px-2 py-0.5 rounded-full">{i}</span>)}</div>}
+                  {u.level > 1 && <span className="text-xs bg-yellow-50 text-yellow-600 px-2 py-0.5 rounded-full mt-1 inline-block">Lv.{u.level}</span>}
+                </div>
+                <button onClick={() => navigate('/profil/' + u._id)} className="bg-[var(--primary)]/5 text-[var(--primary)] px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-[var(--primary)]/10">Voir</button>
+              </div>
+            </div>
+          ))}</div>}
+        </div>
+      );
+    }
+
+    // === POLLS PAGE ===
+    function Polls({ navigate }) {
+      const [polls, setPolls] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [showCreate, setShowCreate] = useState(false);
+      const [question, setQuestion] = useState('');
+      const [options, setOptions] = useState(['', '']);
+      const fetchPolls = () => api.get('/polls/recent').then(setPolls).catch(()=>{}).finally(()=>setLoading(false));
+      useEffect(() => { fetchPolls(); }, []);
+      const createPoll = async (e) => { e.preventDefault(); const validOpts = options.filter(o => o.trim()); if (validOpts.length < 2 || !question.trim()) return; try { await api.post('/polls', { question: question.trim(), options: validOpts }); setShowCreate(false); setQuestion(''); setOptions(['', '']); fetchPolls(); } catch(err) { alert(err.message); } };
+      const vote = async (pollId, option) => { try { await api.post('/polls/' + pollId + '/vote', { option }); fetchPolls(); } catch(err) { alert(err.message); } };
+      if (loading) return <div className="max-w-xl mx-auto p-4 text-center text-gray-400 py-20">Chargement...</div>;
+      return (
+        <div className="max-w-xl mx-auto p-4 page-slide">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl font-bold text-gray-800">📊 Sondages</h1>
+              <button onClick={() => setShowCreate(true)} className="btn-primary px-3 py-1.5">+ Créer</button>
+          </div>
+          {polls.length === 0 && <div className="text-center py-12"><p className="text-4xl mb-2">📊</p><p className="text-gray-400 text-sm">Aucun sondage. Sois le premier !</p></div>}
+          <div className="space-y-3">
+            {polls.map(p => {
+              const total = p.options.reduce((s, o) => s + o.voters.length, 0);
+              const userVote = p.options.find(o => o.voters.includes(useAuth().user._id));
+              return (
+                <div key={p._id} className="bg-white rounded-xl shadow-sm p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    {p.creator && <>{getAvatar(p.creator, 24)}<span className="text-xs text-gray-500">{p.creator.email.split('@')[0]}</span></>}
+                    <span className="text-xs text-gray-400 ml-auto">{new Date(p.createdAt).toLocaleDateString('fr-FR')}</span>
+                  </div>
+                  <p className="font-semibold text-sm text-gray-800 mb-3">{p.question}</p>
+                  <div className="space-y-2">
+                    {p.options.map(o => {
+                      const pct = total > 0 ? Math.round((o.voters.length / total) * 100) : 0;
+                      const isVoted = userVote?.text === o.text;
+                      return (
+                        <button key={o.text} onClick={() => vote(p._id, o.text)} className={`w-full text-left rounded-lg p-2.5 text-sm relative overflow-hidden border ${isVoted ? 'border-[var(--primary)] bg-[var(--primary)]/5' : 'border-gray-200 hover:border-[var(--primary-light)]'}`}>
+                          <div className="absolute inset-0 bg-[var(--primary)]/10 transition-all" style={{width: pct + '%', opacity: 0.5}}/>
+                          <span className="relative flex justify-between"><span>{o.text}</span><span className="font-semibold">{o.voters.length > 0 ? pct + '%' : ''}</span></span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">{total} vote{total !== 1 ? 's' : ''}</p>
+                </div>
+              );
+            })}
+          </div>
+          {showCreate && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="modal-glass rounded-2xl p-6 w-full max-w-sm">
+              <h3 className="font-bold text-lg mb-3">Nouveau Sondage</h3>
+              <form onSubmit={createPoll} className="space-y-3">
+                <input placeholder="Ta question ?" value={question} onChange={e => setQuestion(e.target.value)} required className="w-full px-3 py-2 border rounded-lg text-sm"/>
+                {options.map((o, i) => <input key={i} placeholder={`Option ${i+1}`} value={o} onChange={e => { const n = [...options]; n[i] = e.target.value; setOptions(n); }} className="w-full px-3 py-2 border rounded-lg text-sm"/>)}
+                {options.length < 6 && <button type="button" onClick={() => setOptions([...options, ''])} className="text-[var(--primary)] text-xs hover:underline">+ Ajouter une option</button>}
+                <div className="flex gap-2"><button type="button" onClick={() => setShowCreate(false)} className="flex-1 bg-gray-200 py-2 rounded-lg text-sm font-semibold">Annuler</button><button type="submit" className="flex-1 btn-primary py-2">Créer</button></div>
+              </form>
+            </div>
+          </div>}
+        </div>
+      );
+    }
+
+    // === LIKES RECEIVED PAGE ===
+    function LikesReceived({ navigate }) {
+      const [likes, setLikes] = useState([]);
+      const [loading, setLoading] = useState(true);
+      useEffect(() => { api.get('/likes/received').then(setLikes).catch(()=>{}).finally(()=>setLoading(false)); }, []);
+      if (loading) return <div className="max-w-xl mx-auto p-4 text-center text-gray-400 py-20">Chargement...</div>;
+      return (
+        <div className="max-w-xl mx-auto p-4 page-slide">
+          <h1 className="text-xl font-bold text-gray-800 mb-4">❤️ Likes reçus ({likes.length})</h1>
+          {likes.length === 0 ? (
+            <div className="text-center py-16"><p className="text-4xl mb-3">💔</p><p className="text-gray-400">Aucun like reçu pour l'instant</p></div>
+          ) : (
+            <div className="space-y-2">{likes.map(u => (
+              <button key={u._id} onClick={() => navigate('/profil/' + u._id)} className="w-full flex items-center gap-3 p-3 bg-white rounded-xl hover:bg-gray-50 transition shadow-sm text-left">
+                <div className="relative flex-shrink-0">{getAvatar(u, 44)}{isOnline(u.lastSeen) && <div className="online-dot"/>}</div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-semibold text-sm text-gray-800">{u.email.split('@')[0]}</span>
+                  <p className="text-xs text-gray-400">{u.age} ans · {u.city}</p>
+                </div>
+                <span className="text-xs text-gray-400">{new Date(u.likedAt).toLocaleDateString('fr-FR')}</span>
+              </button>
+            ))}</div>
+          )}
+        </div>
+      );
+    }
+
+    // === BLOCKED LIST PAGE ===
+    function BlockedList({ navigate }) {
+      const [blocked, setBlocked] = useState([]);
+      const [loading, setLoading] = useState(true);
+      useEffect(() => { api.get('/users/blocked').then(setBlocked).catch(()=>{}).finally(()=>setLoading(false)); }, []);
+      const unblock = async (id) => { try { await api.post('/users/unblock', { userId: id }); setBlocked(blocked.filter(b => b._id !== id)); } catch(e) { alert(e.message); } };
+      if (loading) return <div className="max-w-xl mx-auto p-4 text-center text-gray-400 py-20">Chargement...</div>;
+      return (
+        <div className="max-w-xl mx-auto p-4 page-slide">
+          <h1 className="text-xl font-bold text-gray-800 mb-4">🚫 Utilisateurs bloqués ({blocked.length})</h1>
+          {blocked.length === 0 ? (
+            <div className="text-center py-16"><p className="text-4xl mb-3">✅</p><p className="text-gray-400">Aucun utilisateur bloqué</p></div>
+          ) : (
+            <div className="space-y-2">{blocked.map(u => (
+              <div key={u._id} className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm">
+                <div className="relative flex-shrink-0">{getAvatar(u, 40)}</div>
+                <div className="flex-1 min-w-0">
+                  <button onClick={() => navigate('/profil/' + u._id)} className="font-semibold text-sm text-gray-800 hover:text-[var(--primary)]">{u.email.split('@')[0]}</button>
+                  <p className="text-xs text-gray-400">{u.age} ans · {u.city}</p>
+                </div>
+                <button onClick={() => unblock(u._id)} className="bg-gray-200 text-gray-600 px-3 py-1 rounded-lg text-xs font-semibold hover:bg-gray-300">Débloquer</button>
+              </div>
+            ))}</div>
+          )}
+        </div>
+      );
+    }
+
+    // === STATS PAGE ===
+    function Stats({ navigate }) {
+      const { user } = useAuth();
+      const [stats, setStats] = useState(null);
+      const [loading, setLoading] = useState(true);
+      useEffect(() => { api.get('/users/stats').then(setStats).catch(()=>{}).finally(()=>setLoading(false)); }, []);
+      if (loading) return <div className="max-w-xl mx-auto p-4 text-center text-gray-400 py-20">Chargement...</div>;
+      if (!stats) return <div className="max-w-xl mx-auto p-4 text-center text-gray-400 py-20">Erreur</div>;
+      const cards = [
+        { label: 'Amis', value: stats.friends, icon: '👥', color: 'bg-blue-50 text-blue-600' },
+        { label: 'Likes reçus', value: stats.likesReceived, icon: '❤️', color: 'bg-pink-50 text-pink-600' },
+        { label: 'Likes donnés', value: stats.likesGiven, icon: '💖', color: 'bg-red-50 text-red-600' },
+        { label: 'Messages envoyés', value: stats.messagesSent, icon: '💬', color: 'bg-[var(--primary)]/5 text-[var(--primary)]' },
+        { label: 'Notifications non lues', value: stats.unreadNotifications, icon: '🔔', color: 'bg-yellow-50 text-yellow-600' },
+        { label: 'Membre depuis', value: stats.daysActive + ' jours', icon: '📅', color: 'bg-green-50 text-green-600' },
+      ];
+      return (
+        <div className="max-w-xl mx-auto p-4 page-slide">
+          <h1 className="text-xl font-bold text-gray-800 mb-4">📊 Mes Statistiques</h1>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            {cards.map(c => (
+              <div key={c.label} className={`rounded-xl p-4 ${c.color}`}>
+                <p className="text-2xl mb-1">{c.icon}</p>
+                <p className="text-2xl font-bold">{c.value}</p>
+                <p className="text-xs opacity-75">{c.label}</p>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => navigate('/compte')} className="w-full btn-primary py-2.5">Retour au compte</button>
+        </div>
+      );
+    }
+
+    // === APP ===
+    function App() {
+      const { user, loading } = useAuth();
+      const { path, navigate } = useRoute();
+      const [prevPage, setPrevPage] = useState('');
+      const page = path.split('/')[1] || 'messages';
+      useEffect(() => { if (page !== prevPage) setPrevPage(page); }, [page]);
+      if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Chargement...</div>;
+      if (!user) {
+        if (path === '/inscription') return <Register navigate={navigate}/>;
+        return <Login navigate={navigate}/>;
+      }
+      return (
+        <div>
+          <Navbar page={page} navigate={navigate}/>
+          <div key={page} className="page-slide">
+            {page==='messages'&&!path.split('/')[2]&&<Messages navigate={navigate}/>}
+            {path.startsWith('/chat/')&&<Chat userId={path.split('/')[2]} navigate={navigate}/>}
+            {page==='stories'&&<Stories navigate={navigate}/>}
+            {page==='recherche'&&<Search navigate={navigate}/>}
+            {page==='explorer'&&<Explorer navigate={navigate}/>}
+            {page==='amis'&&<Friends navigate={navigate}/>}
+            {page==='likes'&&<LikesReceived navigate={navigate}/>}
+            {page==='sondages'&&<Polls navigate={navigate}/>}
+            {page==='bloques'&&<BlockedList navigate={navigate}/>}
+            {page==='stats'&&<Stats navigate={navigate}/>}
+            {page==='compte'&&<Account/>}
+            {path.startsWith('/profil/')&&<Profile userId={path.split('/')[2]} navigate={navigate}/>}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<ThemeProvider><AuthProvider><App/></AuthProvider></ThemeProvider>);
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(function(reg) {
+        console.log('TeenLink PWA activé !');
+      }).catch(function(err) {
+        console.log('Service worker non disponible:', err);
+      });
+    }
+  </script>
+</body>
+</html>

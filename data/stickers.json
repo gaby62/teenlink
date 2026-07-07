@@ -1,0 +1,110 @@
+[
+  {
+    "_id": "s_default_1",
+    "name": "Thumbs Up",
+    "emoji": "👍",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">👍</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.647Z"
+  },
+  {
+    "_id": "s_default_2",
+    "name": "Heart",
+    "emoji": "❤️",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">❤️</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.653Z"
+  },
+  {
+    "_id": "s_default_3",
+    "name": "Fire",
+    "emoji": "🔥",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">🔥</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.653Z"
+  },
+  {
+    "_id": "s_default_4",
+    "name": "Laugh",
+    "emoji": "😂",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">😂</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.653Z"
+  },
+  {
+    "_id": "s_default_5",
+    "name": "Cool",
+    "emoji": "😎",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">😎</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.653Z"
+  },
+  {
+    "_id": "s_default_6",
+    "name": "Sparkles",
+    "emoji": "✨",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">✨</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.653Z"
+  },
+  {
+    "_id": "s_default_7",
+    "name": "Clap",
+    "emoji": "👏",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">👏</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.653Z"
+  },
+  {
+    "_id": "s_default_8",
+    "name": "Wave",
+    "emoji": "👋",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">👋</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.653Z"
+  },
+  {
+    "_id": "s_default_9",
+    "name": "Think",
+    "emoji": "🤔",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">🤔</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.653Z"
+  },
+  {
+    "_id": "s_default_10",
+    "name": "Party",
+    "emoji": "🎉",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">🎉</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.653Z"
+  },
+  {
+    "_id": "s_default_11",
+    "name": "Strong",
+    "emoji": "💪",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">💪</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.653Z"
+  },
+  {
+    "_id": "s_default_12",
+    "name": "Star",
+    "emoji": "⭐",
+    "image": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">⭐</text></svg>",
+    "uploadedBy": "system",
+    "downloads": 0,
+    "createdAt": "2026-07-05T19:59:20.653Z"
+  }
+]
